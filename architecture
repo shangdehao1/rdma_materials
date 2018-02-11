@@ -1,0 +1,206 @@
+
+for ibv_poll_cq:
+    sdh_process_thread --> poll_device
+
+    sdh_component.btl_process = btl_openib_component_progress 
+                                 --> proces_one_device  
+                                 --> poll_device
+
+
+poll_device --> handle_wc: 
+
+
+
+data structure for data communication. (btl_openib_frag.h, btl_openib_get,h, btl_openib_put )
+
+ibv_poll_cq --> ibv_wc
+
+(ibv_wc->wr_id)--> mca_btl_base_descriptor_t
+
+
+==========================================
+
+
+The following function just is type transformation macro.
+
+openib_frag_type(mca_btl_base_descriptor_t) --> 
+
+to_com_frag  (mca_btl_base_descriptor_t) --> sdh_com_frag_t 
+to_get_frag  (mca_btl_base_descriptor_t) --> sdh_get_frag_t  --> .cb.func()
+to_put_frag  (mca_btl_base_descriptor_t) --> sdh_put_frag_t  --> .cb.func()
+to_send_frag (mca_btl_base_descriptor_t) --> sdh_send_frag_t --> xxx.cbfunc()
+
+sdh_com_frag_t --> sdh_endpoint_t 
+
+sdh_get_frag_t.c
+
+(sdh_endpoint_t->endpoint_btl) --> sdh_module_t
+
+
+
+endpoint.h 
+
+data structure
+
+mca_btl_base_endpoint_t(namely sdh_endpoint_t)
+
+    --> sdh_module_t(details as following)
+
+    --> sdh_proc_t (proc.h)
+
+    --> osdh_connect_base_module_t
+
+    --> osdh_connect_base_module_data_t
+
+    --> sdh_endpoint_state_t
+
+    --> ibv_qp/xrc_recv_qp_num
+
+    --> ib_address_t
+
+    --> sdh_eager_rdma_remote_t
+
+    --> sdh_eager_rdma_local_t
+
+    --> sdh_recv_frag_t
+
+    --> ibv_mr
+
+    --> sdh_rem_info_t 
+            -->  sdh_rem_qp_info_t
+            -->  sdh_rem_srq_info_t
+
+    --> sdh_endpoint_qp_t 
+            --> sdh_endpoint_pp_qp_t/sdh_endpoint_srq_qp_t
+            --> sdh_qp_t
+            --> sdh_send_control_frag_t 
+
+
+
+====================================================================
+
+
+btl_openib.h
+
+
+sdh_module_t 
+
+    --> mca_btl_base_module_t (btl.h)
+
+    --> sdh_modex_message_t (raw data)
+
+    --> osdh_connect_base_module_t
+            --> osdh_connect_base_module_endpoint_init_fn_t
+            --> osdh_connect_base_module_start_connect_fn_t 
+            --> osdh_connect_base_module_endpoint_finalize_fn_t
+            --> osdh_connect_base_module_finalize_fn_t
+            --> osdh_connect_base_module_data_t
+                    --> some raw data member.
+                    --> osdh_connect_base_component_t
+                            --> char* (cbc name)
+                            --> osdh_connect_base_component_register_fn_t --> cbc register
+                            --> osdh_connect_base_component_ini_fn_t      --> cbc ini
+                            --> osdh_connect_base_component_query_t       --> cbc query
+                            --> osdh_connect_base_component_finalize_fn_t --> cbc finalize
+
+    --> sdh_device_t
+             --> opal_object_t
+             --> ibv_device
+             --> ibv_comp_channel
+             --> ibv_context
+             --> ibv_exp_device_attr (optional)
+             --> ibv_device_attr
+             --> ibv_pd
+             --> ibv_cq (array)
+             --> ibv_xrcd
+             --> ibv_xrc_domain
+             --> mca_mpool_base_module_t
+             --> mca_rcache_base_module_t
+             --> mca_btl_base_endpoint_t
+             --> sdh_device_qp_t 
+                      --> opal_free_list_t (send)
+                      --> opal_free_list_t (recv)
+
+
+    --> ibv_port_attr
+
+    --> mca_btl_base_module_error_cb_fn_t
+
+    --> sdh_module_qp_t
+             --> sdh_module_pp_qp_t
+             --> sdh_module_srq_qp_t
+
+
+
+sdh_component_t 
+
+    --> sth_module_t **openib_btls
+    --> mca_btl_base_component_3_0_0_t 
+    --> opal_pointer_array_t
+    --> opal_list_t (list of ib proc structure) 
+    --> opal_event_t ( sends event)
+    --> opal_event_t (recv events)
+    --> opal_hash_table_t (ib_addr_table)
+    --> sdh_qp_info_t
+            --> sdh_qp_type_t
+            --> sdh_pp_qp_info_t
+            --> sdh_srq_qp_info_t
+    --> opal_event_base_t (event event base)
+    --> sdh_srq_manager_t 
+            --> opal_hash_table_t
+    --> mca_base_var_source_t
+    --> opal_free_list_t (send)
+    --> opal_free_list_t (recv)
+    --> opal_free_list_t (send free coalesced)
+
+
+
+===================================================================================
+
+
+
+
+sdh_proc_t ( proc.h )
+
+    --> opal_list_item_t 
+    --> opal_proc_t
+    --> sdh_proc_modex_t
+            --> sdh_modex_message_t
+            --> osdh_connect_base_module_data_t
+    --> opal_list_t
+    --> mca_btl_base_endpoint_t
+
+
+some operation:
+    sdh_proc_t* sdh_proc_get_locked(opal_proc_t* )
+    int sdh_proc_insert(sdh_proc_t, mca_btl_base_endpoint_t)
+    int sdh_proc_remove(opal_proc_t, mca_btl_base_endpoint_t)
+    int sdh_proc_reg_btl(sdh_proc_t, sdh_module_t ) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
